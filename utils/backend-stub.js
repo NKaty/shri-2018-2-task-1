@@ -1,9 +1,9 @@
-const { generateData, generateDetails } = require('./generate-data');
+const {generateData, generateDetails} = require('./generate-data');
 
 const data = generateData();
 const cache = {};
 
-exports.initBackendStub = function(app) {
+exports.initBackendStub = function (app) {
   app.get('/api/stations', (req, res) => {
     res.json(data);
   });
@@ -13,8 +13,6 @@ exports.initBackendStub = function(app) {
     const info = data[id];
     const details = cache[id] || (cache[id] = generateDetails(info));
 
-    res.json({ ...info, ...details });
-
-    return {};
+    res.json({...info, ...details});
   });
 };

@@ -2,7 +2,7 @@ import { loadList, loadDetails } from './api';
 import { getDetailsContentLayout } from './details';
 import { createFilterControl } from './filter';
 
-export function initMap(ymaps, containerId) {
+export default function initMap (ymaps, containerId) {
   const myMap = new ymaps.Map(containerId, {
     center: [55.76, 37.64],
     controls: [],
@@ -19,11 +19,11 @@ export function initMap(ymaps, containerId) {
     geoObjectBalloonContentLayout: getDetailsContentLayout(ymaps)
   });
 
-  objectManager.clusters.options.set('preset', 'islands#greenClusterIcons');
+  myMap.geoObjects.add(objectManager);
 
-  loadList().then(data => {
-    objectManager.add(data);
-  });
+  loadList()
+    .then(data => objectManager.add(data))
+    .catch(error => console.log(error));
 
   // details
   objectManager.objects.events.add('click', event => {
@@ -33,10 +33,12 @@ export function initMap(ymaps, containerId) {
     objectManager.objects.balloon.open(objectId);
 
     if (!obj.properties.details) {
-      loadDetails(objectId).then(data => {
-        obj.properties.details = data;
-        objectManager.objects.balloon.setData(obj);
-      });
+      loadDetails(objectId)
+        .then(data => {
+          obj.properties.details = data;
+          objectManager.objects.balloon.setData(obj);
+        })
+        .catch(error => console.log(error));
     }
   });
 
@@ -44,7 +46,7 @@ export function initMap(ymaps, containerId) {
   const listBoxControl = createFilterControl(ymaps);
   myMap.controls.add(listBoxControl);
 
-  var filterMonitor = new ymaps.Monitor(listBoxControl.state);
+  const filterMonitor = new ymaps.Monitor(listBoxControl.state);
   filterMonitor.add('filters', filters => {
     objectManager.setFilter(
       obj => filters[obj.isActive ? 'active' : 'defective']
